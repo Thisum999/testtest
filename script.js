@@ -86,6 +86,7 @@ function markAttendance(admissionNumber, method = 'QR') {
         });
         saveAttendanceToCookies(); // Save after marking attendance
         updateAttendanceLog();
+        showGreetingModal(student.name); // Show greeting modal
         showScanResult(`Marked ${student.name} present at ${currentTime}`, true);
     } else {
         showScanResult('Student not found', false);
@@ -718,8 +719,146 @@ async function saveAttendance(admissionNumber, method) {
     }
 }
 
-// Initialize the page
+// Function to get appropriate greeting based on time
+function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+}
+
+// Function to speak text using Web Speech API
+function speakGreeting(text) {
+    // Check if speech synthesis is supported and not already speaking
+    if ('speechSynthesis' in window && !window.speechSynthesis.speaking) {
+        // Cancel any previous speech
+        window.speechSynthesis.cancel();
+        
+        // Create a new speech synthesis utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Set initial voice preferences
+        utterance.volume = 1;     // Full volume
+        utterance.rate = 0.9;     // Natural speed
+        utterance.pitch = 1;      // Natural pitch
+        utterance.lang = 'en-GB'; // British English for better quality
+        
+        // Get available voices and wait if needed
+        let voices = window.speechSynthesis.getVoices();
+        if (voices.length === 0) {
+            // Wait for voices to be loaded
+            window.speechSynthesis.onvoiceschanged = () => {
+                voices = window.speechSynthesis.getVoices();
+                setVoiceAndSpeak();
+            };
+        } else {
+            setVoiceAndSpeak();
+        }
+        
+        function setVoiceAndSpeak() {
+            // Try to find the best male voice in this order:
+            // 1. Google UK Male
+            // 2. Microsoft David
+            // 3. Any English Male voice
+            const preferredVoices = [
+                'Google UK English Male',
+                'Microsoft David Desktop',
+                'English United Kingdom',
+                'Microsoft Mark',
+                'Alex'
+            ];
+            
+            let selectedVoice = null;
+            
+            // First try to find exact matches
+            for (const voiceName of preferredVoices) {
+                const voice = voices.find(v => v.name === voiceName);
+                if (voice) {
+                    selectedVoice = voice;
+                    break;
+                }
+            }
+            
+            // If no exact match, try to find any male English voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    (voice.name.includes('Male') || 
+                     voice.name.toLowerCase().includes('david') || 
+                     voice.name.toLowerCase().includes('thomas') || 
+                     voice.name.toLowerCase().includes('mark'))
+                );
+            }
+            
+            // Set the selected voice
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            
+            // Fine-tune voice parameters based on selected voice
+            if (utterance.voice) {
+                if (utterance.voice.name.includes('Google')) {
+                    utterance.rate = 0.95;
+                    utterance.pitch = 0.95;
+                } else if (utterance.voice.name.includes('Microsoft')) {
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                }
+            }
+            
+            // Speak the text
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+}
+
+// Function to show greeting modal
+function showGreetingModal(studentName) {
+    const greeting = getGreeting();
+    const greetingText = `${greeting} ${studentName}`;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'greetingModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <h3 class="text-primary mb-4">${greeting}, ${studentName}!</h3>
+                    <i class="fas fa-user-check text-success fs-1 mb-3"></i>
+                    <p class="mb-0">Your attendance has been marked.</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Speak the greeting once
+    speakGreeting(greetingText);
+    
+    // Remove modal after it's hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+    
+    // Auto hide after 4 seconds
+    setTimeout(() => {
+        bsModal.hide();
+    }, 4000);
+}
+
+// Initialize voices when the page loads
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize speech synthesis voices
+    if ('speechSynthesis' in window) {
+        speechSynthesis.onvoiceschanged = () => {
+            speechSynthesis.getVoices();
+        };
+    }
+    
     // Load saved attendance data from cookies
     loadAttendanceFromCookies();
 
