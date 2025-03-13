@@ -1,0 +1,141 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+#reader {
+    width: 100%;
+    min-height: 300px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#reader video {
+    border-radius: 8px;
+}
+
+.student-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.student-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s;
+}
+
+.student-item:hover {
+    background-color: #f8f9fa;
+}
+
+.student-info {
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.student-name {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.student-id {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.attendance-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+#scan-result {
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+}
+
+#scan-result.success {
+    background-color: #d4edda;
+    color: #155724;
+    display: block;
+}
+
+#scan-result.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    display: block;
+}
+
+.table {
+    background-color: white;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+.present {
+    background-color: #d4edda !important;
+}
+
+.absent {
+    background-color: #f8d7da !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Animation for success message */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Sound effect indicator */
+.sound-wave {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
